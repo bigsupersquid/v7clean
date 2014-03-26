@@ -1,0 +1,37 @@
+#v7clean
+#check directory (libs) for arm versions.
+    #!/bin/sh
+     
+    # Loop over each argument.
+    for lib in "$@"
+    do
+     
+            cwd=`pwd`
+            cd $@
+     
+            find $@ -type f -print0 | xargs -0 file /dev/null |
+                    grep '\(ELF\)' |
+                    sed 's/:.*//' |
+                    while read filename
+            do
+                    readelf -A $filename |
+                            grep 'Tag_CPU_arch:' |
+                            sed 's|.*:\W\+\(\w\+\).*|\1|' |
+                            while read arch
+                    do
+                            echo $filename
+                            case $arch in
+                                    v5TE )    echo "ARMv5TE"
+                                            ;;
+                                    v6 )    echo "ARMv6"
+                                            ;;
+                                    v7 )    echo "ARMv7"
+                                            ;;
+                                    * )     echo "other" >> $othertmp
+                                            ;;
+                            esac
+                            echo
+                    done
+            done
+     done
+	 cd $cwd
